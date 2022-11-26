@@ -22,6 +22,7 @@ async function run() {
     try {
         const productCategories = client.db('TvCorner').collection('product-categories');
         const productCategoriesById = client.db('TvCorner').collection('products');
+        const bookingCollection = client.db('TvCorner').collection('bookings');
 
         app.get('/product-categories', async (req, res) => {
             const query = {};
@@ -34,6 +35,14 @@ async function run() {
             const query = { category_id: id }
             const selectedCategory = await productCategoriesById.find(query).toArray();
             res.send(selectedCategory);
+        })
+
+        // for collect booking data
+        app.post('/bookings', async (req, res) => {
+            const booking = req.body
+            console.log(booking)
+            const result = await bookingCollection.insertOne(booking);
+            res.send(result);
         })
 
     }
@@ -65,6 +74,3 @@ app.get('/', async (req, res) => {
 
 app.listen(port, () => console.log(`Tv corner portal running on ${port}`));
 
-
-//TvDbUser
-//GMkhIXGXnogwAcF2
