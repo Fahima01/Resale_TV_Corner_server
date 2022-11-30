@@ -43,6 +43,7 @@ async function run() {
         const productCategoriesById = client.db('TvCorner').collection('products');
         const bookingCollection = client.db('TvCorner').collection('bookings');
         const userCollection = client.db('TvCorner').collection('users');
+        const addProductsCollection = client.db('TvCorner').collection('productsadd');
 
 
 
@@ -59,14 +60,13 @@ async function run() {
             res.send(selectedCategory);
         })
 
-        // for collect booking data
+        //for collect booking data
         app.post('/bookings', async (req, res) => {
             const booking = req.body
             console.log(booking)
             const result = await bookingCollection.insertOne(booking);
             res.send(result);
         })
-
 
         app.get('/bookings', verifyJwt, async (req, res) => {
             const email = req.query.email
@@ -93,7 +93,7 @@ async function run() {
             const qurey = { email: email }
             const user = await userCollection.findOne(qurey);
             if (user) {
-                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1h' })
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
                 return res.send({ accessToken: token })
             }
             console.log(user)
@@ -115,8 +115,32 @@ async function run() {
             res.send(selectedCategory);
         })
 
+        //get admin
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await userCollection.findOne(query);
+            res.send({ isAdmin: user?.role === 'admin' })
+
+        })
+
+        //get user-only
+        app.get('/users/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await userCollection.findOne(query);
+            res.send({ isUser: user?.status === 'User' })
+
+        })
+
         //make admin api
-        app.put('/users/admin/:id', async (req, res) => {
+        app.put('/users/admin/:id', verifyJwt, async (req, res) => {
+            const decodedEmail = req.decoded.email
+            const query = { email: decodedEmail }
+            const user = await userCollection.findOne(query)
+            if (user?.role !== 'admin') {
+                return res.status(403).send({ messege: 'Forbiden Access' })
+            }
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const options = { upsert: true };
@@ -127,7 +151,27 @@ async function run() {
             }
             const result = await userCollection.updateOne(filter, updateDoc, options);
             res.send(result);
+        })
 
+        //upload products
+        app.get('/productsadd', verifyJwt, async (req, res) => {
+            const query = {};
+            const addProducts = await addProductsCollection.find(query).toArray();
+            res.send(addProducts);
+        })
+
+        //add data to mongodb
+        app.post('/productsadd', verifyJwt, async (req, res) => {
+            const addProducts = req.body;
+            const result = await addProductsCollection.insertOne(addProducts);
+            res.send(result);
+        });
+
+        app.delete('/productsadd/:id', verifyJwt, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await addProductsCollection.deleteOne(filter);
+            res.send(result);
         })
 
     }
