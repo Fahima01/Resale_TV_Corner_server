@@ -34,8 +34,6 @@ function verifyJwt(req, res, next) {
         next();
 
     })
-
-
 }
 async function run() {
     try {
@@ -174,20 +172,6 @@ async function run() {
     }
 }
 run().catch(console.log);
-
-
-
-// app.get('/product-categories', (req, res) => {
-//     res.send(categorie)
-// })
-// app.get('/products/:id', (req, res) => {
-//     const id = req.params.id;
-//     const selectedCategory = products.filter(p => p.category_id === id);
-//     res.send(selectedCategory)
-
-// })
-
-
 
 
 app.get('/', async (req, res) => {
