@@ -107,13 +107,7 @@ async function run() {
             res.send(users);
         })
 
-        //buyer and seller
-        app.get('/users/status', async (req, res) => {
-            const status = req.params.status;
-            const query = { status: status }
-            const selectedCategory = await productCategoriesById.find(query).toArray();
-            res.send(selectedCategory);
-        })
+
 
         //get admin
         app.get('/users/admin/:email', async (req, res) => {
